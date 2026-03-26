@@ -6,6 +6,7 @@
 pub mod governance;
 pub mod liquidity_pool;
 pub mod reputation_system;
+pub mod multisig_treasury;
 #[cfg(test)]
 pub mod insurance_pool;
 #[cfg(test)]
