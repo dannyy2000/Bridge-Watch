@@ -1,4 +1,3 @@
-
 import NotificationPreferences from "../components/NotificationPreferences";
 import { useNotificationContext } from "../hooks/useNotificationContext";
 

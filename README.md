@@ -249,6 +249,10 @@ Ways to contribute:
 
 Please review the contribution guidelines before submitting a pull request.
 
+## Clipboard Utilities
+
+The frontend clipboard API and usage examples are documented in `docs/copy-clipboard.md`.
+
 ## Maintainer Commitment
 
 This project is actively maintained with the goal of long-term ecosystem support. We are committed to clear documentation, responsive issue management, and a stable development process. Major decisions will be discussed openly and community input will be valued throughout the project lifecycle.
