@@ -67,6 +67,16 @@ jobs:
           REDIS_HOST: localhost
           REDIS_PORT: 6379
 
+      - name: Run migrations
+        run: npm --workspace=backend run migrate
+        env:
+          NODE_ENV: test
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: bridge_watch_test
+          POSTGRES_USER: bridge_watch
+          POSTGRES_PASSWORD: test_password
+
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
         with:
