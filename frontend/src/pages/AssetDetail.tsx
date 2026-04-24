@@ -124,3 +124,13 @@ export default function AssetDetail() {
     </div>
   );
 }
+
+function PriceImpactCalculatorWrapper({ symbol }: { symbol: string }) {
+  // Most assets are traded against XLM in this app
+  const pair: TradingPair = symbol === "XLM" ? "USDC/XLM" : (`${symbol}/XLM` as any);
+  const { depth, isLoading } = useLiquidity(pair);
+
+  if (isLoading && !depth) return <LoadingSpinner message="Loading liquidity data..." />;
+
+  return <PriceImpactCalculator depth={depth} />;
+}
