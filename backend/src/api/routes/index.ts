@@ -28,6 +28,7 @@ import { poolRoutes } from "./pools.routes.js";
 import { searchRoutes } from "./search.routes.js";
 import { cleanupRoutes } from "./cleanup.routes.js";
 import { discordRoutes } from "./discord.routes.js";
+import { alertRulesRoutes } from "./alertRules.js";
 import { auditRoutes } from "./audit.js";
 
 export async function registerRoutes(server: FastifyInstance) {
@@ -62,5 +63,6 @@ export async function registerRoutes(server: FastifyInstance) {
   server.register(searchRoutes, { prefix: "/api/v1/search" });
   server.register(cleanupRoutes, { prefix: "/api/v1/cleanup" });
   server.register(discordRoutes, { prefix: "/api/v1/discord" });
+  server.register(alertRulesRoutes, { prefix: "/api/v1/alert-rules" });
   server.register(auditRoutes, { prefix: "/api/v1/admin/audit" });
 }
