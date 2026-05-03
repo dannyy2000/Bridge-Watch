@@ -8,6 +8,7 @@ import { processMetricsRollup } from "./metricsRollup.worker.js";
 import { processDigestScheduler } from "./digestScheduler.worker.js";
 import { processMetadataSync } from "./metadataSync.job.js";
 import { processExternalDependencyMonitor } from "./externalDependencyMonitor.job.js";
+import { processReconciliation } from "./reconciliation.job.js";
 import { logger } from "../utils/logger.js";
 import { initSupplyVerificationJob } from "../jobs/supplyVerification.job.js";
 import { runAuditRetentionJob } from "../jobs/auditRetention.job.js";
@@ -58,8 +59,8 @@ export async function initJobSystem() {
       case "external-dependency-monitor":
         await processExternalDependencyMonitor(job);
         break;
-      case "cache-priming":
-        await processCachePriming(job);
+      case "reconciliation":
+        await processReconciliation(job as any);
         break;
       default:
         logger.warn({ jobName: job.name }, "Unknown job name in worker");
@@ -129,6 +130,14 @@ export async function initJobSystem() {
 
   // External dependency checks: every 2 minutes
   await jobQueue.addRepeatableJob("external-dependency-monitor", {}, "*/2 * * * *");
+  // reconciliation: per-asset, every hour (top of hour)
+  // Note: This uses the queue helper for retry/backoff defaults.
+  for (const assetCode of ["USDC", "EURC"]) {
+    await jobQueue.addJob("reconciliation", { assetCode }, {
+      repeat: { pattern: "0 * * * *" },
+      jobId: `reconciliation:${assetCode}`,
+    });
+  }
 
   // Cache priming: High priority every hour, Full every day at 03:00 UTC
   await jobQueue.addRepeatableJob("cache-priming", { priority: "high" }, "0 * * * *");
