@@ -4,13 +4,27 @@ import { processPriceCollection } from "./priceCollection.job.js";
 import { processHealthCalculation } from "./healthCalculation.job.js";
 import { processBridgeVerification } from "./bridgeVerification.job.js";
 import { processAnalyticsAggregation } from "./analyticsAggregation.worker.js";
+import { processMetricsRollup } from "./metricsRollup.worker.js";
 import { processDigestScheduler } from "./digestScheduler.worker.js";
+import { processMetadataSync } from "./metadataSync.job.js";
+import { processExternalDependencyMonitor } from "./externalDependencyMonitor.job.js";
+import { processReconciliation } from "./reconciliation.job.js";
 import { logger } from "../utils/logger.js";
 import { initSupplyVerificationJob } from "../jobs/supplyVerification.job.js";
 import { runAuditRetentionJob } from "../jobs/auditRetention.job.js";
+import { processCachePriming } from "./cachePrimer.job.js";
 
 export async function initJobSystem() {
   const jobQueue = JobQueue.getInstance();
+
+  // Run high-priority cache priming on startup
+  try {
+    const { cachePrimerService, CachePriority } = await import("../services/cachePrimer.service.js");
+    logger.info("Running startup high-priority cache priming");
+    await cachePrimerService.prime(CachePriority.HIGH);
+  } catch (error) {
+    logger.error({ error }, "Startup cache priming failed, continuing with job initialization");
+  }
 
   // Initialize worker with processor
   jobQueue.initWorker(async (job: Job) => {
@@ -27,6 +41,9 @@ export async function initJobSystem() {
       case "analytics-aggregation":
         await processAnalyticsAggregation(job);
         break;
+      case "metrics-rollup":
+        await processMetricsRollup(job);
+        break;
       case "audit-retention":
         await runAuditRetentionJob(job.data.retentionDays);
         break;
@@ -35,6 +52,15 @@ export async function initJobSystem() {
         break;
       case "digest-scheduler-weekly":
         await processDigestScheduler(job);
+        break;
+      case "metadata-sync":
+        await processMetadataSync(job);
+        break;
+      case "external-dependency-monitor":
+        await processExternalDependencyMonitor(job);
+        break;
+      case "reconciliation":
+        await processReconciliation(job as any);
         break;
       default:
         logger.warn({ jobName: job.name }, "Unknown job name in worker");
@@ -86,6 +112,9 @@ export async function initJobSystem() {
     params: { performerType: "bridges", metric: "tvl", limit: 10 }
   }, "*/5 * * * *");
 
+  // Metrics rollup: every 15 minutes to keep daily stats fresh
+  await jobQueue.addRepeatableJob("metrics-rollup", { type: "bridge-volume" }, "*/15 * * * *");
+
   // Audit log retention: daily at 02:00 UTC, keep 90 days of info-level entries
   await jobQueue.addRepeatableJob("audit-retention", { retentionDays: 90 }, "0 2 * * *");
 
@@ -95,6 +124,24 @@ export async function initJobSystem() {
   
   // Weekly digest: every hour on Monday (service will check user preferences)
   await jobQueue.addRepeatableJob("digest-scheduler-weekly", { digestType: "weekly" }, "0 * * * 1");
+
+  // Metadata sync: every 4 hours
+  await jobQueue.addRepeatableJob("metadata-sync", {}, "0 */4 * * *");
+
+  // External dependency checks: every 2 minutes
+  await jobQueue.addRepeatableJob("external-dependency-monitor", {}, "*/2 * * * *");
+  // reconciliation: per-asset, every hour (top of hour)
+  // Note: This uses the queue helper for retry/backoff defaults.
+  for (const assetCode of ["USDC", "EURC"]) {
+    await jobQueue.addJob("reconciliation", { assetCode }, {
+      repeat: { pattern: "0 * * * *" },
+      jobId: `reconciliation:${assetCode}`,
+    });
+  }
+
+  // Cache priming: High priority every hour, Full every day at 03:00 UTC
+  await jobQueue.addRepeatableJob("cache-priming", { priority: "high" }, "0 * * * *");
+  await jobQueue.addRepeatableJob("cache-priming", {}, "0 3 * * *");
 
   logger.info("Scheduled job system initialized");
 }
