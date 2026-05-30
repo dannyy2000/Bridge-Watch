@@ -14,6 +14,7 @@ Use this checklist for every production deployment so readiness, verification, r
 - Verify `main` is green in CI and the release branch is rebased or merged cleanly.
 - Confirm database migrations have been reviewed for backward compatibility and rollback impact.
 - Confirm environment variables, secrets, API keys, and feature flags are present in the target environment.
+- Complete the [secrets audit checklist](./secrets-audit-checklist.md) when rotating or adding secrets for this release.
 - Confirm dashboards and alerts used during rollout are available:
   - [docs/deployment/monitoring-setup.md](/Users/ab/stellardrips/Bridge-Watch/docs/deployment/monitoring-setup.md)
   - [monitoring/runbooks/critical-alerts.md](/Users/ab/stellardrips/Bridge-Watch/monitoring/runbooks/critical-alerts.md)

@@ -25,6 +25,7 @@ These runbooks cover the full lifecycle of a live incident from initial alert th
 | Runbook | Description | Link |
 |---|---|---|
 | Incident Response Guide | Severity matrix, roles, communication templates, escalation policy, and postmortem workflow | [../incident-response-guide.md](../incident-response-guide.md) |
+| Incident Response Templates | Copy-paste triage, update, status page, and postmortem formats with owner/action fields | [incident-response-templates.md](incident-response-templates.md) |
 | Bridge Halt Response | Steps to take when the bridge circuit breaker activates and asset transfers are blocked | *(pending — file: `bridge-halt-response.md`)* |
 | Stale Oracle / Price Feed | How to diagnose and recover from stale or divergent asset price data across Stellar and source chains | *(pending — file: `stale-price-feed.md`)* |
 | Reserve Mismatch Alert | Procedure for investigating and resolving a discrepancy between on-chain reserve commitments and Circle API reported balances | *(pending — file: `reserve-mismatch.md`)* |
@@ -40,6 +41,7 @@ These runbooks cover proactive security maintenance and reactive response to sec
 | Runbook | Description | Link |
 |---|---|---|
 | Secret Rotation Playbook | Step-by-step procedures for rotating all secrets in the platform including API keys, signing keys, DB credentials, and JWT secrets | [secret-rotation-playbook.md](secret-rotation-playbook.md) |
+| Secrets Audit Checklist | Quarterly inventory, least-privilege, rotation, and exposure review for runtime and CI secrets | [../secrets-audit-checklist.md](../secrets-audit-checklist.md) |
 | Operator Key Compromise | Emergency procedure when an operator signing key is confirmed or suspected compromised — includes on-chain key revocation via Soroban contract | *(pending — file: `operator-key-compromise.md`)* |
 | API Key Audit | Quarterly review of active API keys: enumerate, validate, and revoke stale or over-privileged keys | *(pending — file: `api-key-audit.md`)* |
 | Dependency Vulnerability Response | How to triage `npm audit` and `cargo audit` findings and apply patches safely | *(pending — file: `dependency-vuln-response.md`)* |
