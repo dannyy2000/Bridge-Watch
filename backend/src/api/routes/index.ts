@@ -43,6 +43,7 @@ import { externalDependenciesRoutes } from "./externalDependencies.routes.js";
 import { providerHealthRegistryRoutes } from "./providerHealthRegistry.routes.js";
 import { reconciliationRoutes } from "./reconciliation.js";
 import { statusSubscriptionsRoutes } from "./statusSubscriptions.js";
+import { sessionsRoutes } from "./sessions.js";
 import { externalRateLimitMetricsRoutes } from "./externalRateLimitMetrics.routes.js";
 import { eventSubscriptionFilterRoutes } from "./eventSubscriptionFilter.routes.js";
 import { maintenanceRoutes } from "./maintenance.js";

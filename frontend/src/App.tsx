@@ -24,6 +24,7 @@ const Help = lazy(() => import("./pages/Help"));
 const ReleaseNotes = lazy(() => import("./pages/ReleaseNotes"));
 const NotificationPreferencesPage = lazy(() => import("./pages/NotificationPreferencesPage"));
 const RelationshipExplorer = lazy(() => import("./pages/RelationshipExplorer"));
+const SearchResultsPage = lazy(() => import("./pages/SearchResultsPage"));
 const Alerts = lazy(() => import("./pages/Alerts"));
 
 function NotificationInitializer() {
@@ -66,6 +67,7 @@ function App() {
               <Route path="/release-notes" element={<ReleaseNotes />} />
               <Route path="/notification-preferences" element={<NotificationPreferencesPage />} />
               <Route path="/relationship-explorer" element={<RelationshipExplorer />} />
+              <Route path="/search" element={<SearchResultsPage />} />
             </Route>
           </Routes>
         </Suspense>
