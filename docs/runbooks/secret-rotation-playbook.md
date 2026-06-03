@@ -392,5 +392,6 @@ Complete these checks after every rotation to confirm the system is healthy befo
 - [Security Architecture](../architecture/security-architecture.md)
 - [Environment Setup](../deployment/environment-setup.md)
 - [Security Audit Checklist](../security-audit-checklist.md)
+- [Secrets Audit Checklist](../secrets-audit-checklist.md)
 - [Kubernetes Deployment](../deployment/kubernetes-deployment.md)
 - [Runbook Index](index.md)
