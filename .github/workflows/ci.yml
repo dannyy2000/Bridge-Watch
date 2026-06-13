@@ -159,6 +159,10 @@ jobs:
       - name: Test
         run: npm --workspace=frontend run test
 
+      - name: Visual Regression Tests
+        run: npm --workspace=frontend run test:visual
+        continue-on-error: true
+
       - name: Save frontend build and test caches
         if: always()
         uses: actions/cache/save@v4
