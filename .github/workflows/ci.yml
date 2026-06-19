@@ -69,6 +69,9 @@ jobs:
       - name: Lint backend
         run: npm --workspace=backend run lint
 
+      - name: Validate API fixtures
+        run: npm --workspace=backend run fixtures:validate
+
       - name: Build backend
         run: npm --workspace=backend run build
 
