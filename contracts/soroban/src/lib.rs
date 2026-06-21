@@ -1063,7 +1063,6 @@ pub enum HealthSourceDataKey {
 // ---------------------------------------------------------------------------
 // Admin Activity Service types (issue #299)
 // ---------------------------------------------------------------------------
->>>>>>> upstream/main
 
 /// Categories of admin actions captured by the activity log.
 #[contracttype]
@@ -1202,6 +1201,9 @@ impl BridgeWatchContract {
     ) {
         Self::check_permission(&env, &caller, AdminRole::HealthSubmitter);
         
+        
+        // Check if asset is locked
+        Self::assert_asset_not_locked(&env, &asset_code);
         // Check if caller is a trusted source (if any sources are registered)
         let active_sources = source_trust::get_active_trusted_sources(&env);
         if active_sources.len() > 0 {
@@ -1321,6 +1323,9 @@ impl BridgeWatchContract {
     ) {
         Self::check_permission(&env, &caller, AdminRole::PriceSubmitter);
         
+        
+        // Check if asset is locked
+        Self::assert_asset_not_locked(&env, &asset_code);
         // Check if caller is a trusted source (if any sources are registered)
         let active_sources = source_trust::get_active_trusted_sources(&env);
         if active_sources.len() > 0 {
@@ -1818,6 +1823,171 @@ impl BridgeWatchContract {
         env.events()
             .publish((symbol_short!("asset_del"), asset_code), false);
         Self::maybe_create_auto_checkpoint(&env, &caller);
+    }
+
+    // ---------------------------------------------------------------------------
+    // Asset Locking Functions (issue #557)
+    // ---------------------------------------------------------------------------
+
+    /// Lock an asset to prevent operational changes during maintenance or review.
+    pub fn lock_asset(env: Env, caller: Address, asset_code: String, reason: String) {
+        Self::assert_not_globally_paused(&env);
+        Self::check_permission(&env, &caller, AdminRole::AssetManager);
+        
+        let status = Self::load_asset_health(&env, &asset_code);
+        if !status.active {
+            panic!("cannot lock a deregistered asset");
+        }
+
+        let existing_lock: Option<AssetLockState> = env
+            .storage()
+            .persistent()
+            .get(&AssetDataKey::Lock(asset_code.clone()));
+        
+        if let Some(lock) = existing_lock {
+            if lock.is_locked {
+                panic!("asset is already locked");
+            }
+        }
+
+        let timestamp = env.ledger().timestamp();
+        let lock_state = AssetLockState {
+            asset_code: asset_code.clone(),
+            is_locked: true,
+            reason: reason.clone(),
+            locked_by: caller.clone(),
+            locked_at: timestamp,
+            unlocked_by: None,
+            unlocked_at: None,
+        };
+
+        env.storage()
+            .persistent()
+            .set(&AssetDataKey::Lock(asset_code.clone()), &lock_state);
+
+        let mut history: Vec<AssetLockRecord> = env
+            .storage()
+            .persistent()
+            .get(&AssetDataKey::LockHist(asset_code.clone()))
+            .unwrap_or_else(|| Vec::new(&env));
+        
+        history.push_back(AssetLockRecord {
+            locked: true,
+            reason: reason.clone(),
+            caller: caller.clone(),
+            timestamp,
+        });
+        
+        env.storage()
+            .persistent()
+            .set(&AssetDataKey::LockHist(asset_code.clone()), &history);
+
+        env.events()
+            .publish((symbol_short!("asset_lck"), asset_code.clone()), true);
+        env.events().publish(
+            (symbol_short!("lock_set"), asset_code.clone()),
+            (caller.clone(), reason, timestamp),
+        );
+    }
+
+    pub fn unlock_asset(env: Env, caller: Address, asset_code: String) {
+        Self::assert_not_globally_paused(&env);
+        Self::check_permission(&env, &caller, AdminRole::AssetManager);
+        
+        let status = Self::load_asset_health(&env, &asset_code);
+        if !status.active {
+            panic!("cannot unlock a deregistered asset");
+        }
+
+        let existing_lock: Option<AssetLockState> = env
+            .storage()
+            .persistent()
+            .get(&AssetDataKey::Lock(asset_code.clone()));
+        
+        let existing_lock = existing_lock.unwrap_or_else(|| {
+            panic!("asset is not locked");
+        });
+
+        if !existing_lock.is_locked {
+            panic!("asset is not locked");
+        }
+
+        let timestamp = env.ledger().timestamp();
+        let lock_state = AssetLockState {
+            asset_code: asset_code.clone(),
+            is_locked: false,
+            reason: existing_lock.reason.clone(),
+            locked_by: existing_lock.locked_by,
+            locked_at: existing_lock.locked_at,
+            unlocked_by: Some(caller.clone()),
+            unlocked_at: Some(timestamp),
+        };
+
+        env.storage()
+            .persistent()
+            .set(&AssetDataKey::Lock(asset_code.clone()), &lock_state);
+
+        let mut history: Vec<AssetLockRecord> = env
+            .storage()
+            .persistent()
+            .get(&AssetDataKey::LockHist(asset_code.clone()))
+            .unwrap_or_else(|| Vec::new(&env));
+        
+        history.push_back(AssetLockRecord {
+            locked: false,
+            reason: String::from_str(&env, "Unlocked"),
+            caller: caller.clone(),
+            timestamp,
+        });
+        
+        env.storage()
+            .persistent()
+            .set(&AssetDataKey::LockHist(asset_code.clone()), &history);
+
+        env.events()
+            .publish((symbol_short!("asset_ulk"), asset_code.clone()), false);
+        env.events().publish(
+            (symbol_short!("lock_clr"), asset_code.clone()),
+            (caller.clone(), timestamp),
+        );
+    }
+
+    pub fn get_asset_lock_state(env: Env, asset_code: String) -> Option<AssetLockState> {
+        env.storage()
+            .persistent()
+            .get(&AssetDataKey::Lock(asset_code))
+    }
+
+    pub fn is_asset_locked(env: Env, asset_code: String) -> bool {
+        let lock_state: Option<AssetLockState> = env
+            .storage()
+            .persistent()
+            .get(&AssetDataKey::Lock(asset_code));
+        
+        match lock_state {
+            Some(state) => state.is_locked,
+            None => false,
+        }
+    }
+
+    pub fn get_asset_lock_history(env: Env, asset_code: String) -> Vec<AssetLockRecord> {
+        env.storage()
+            .persistent()
+            .get(&AssetDataKey::LockHist(asset_code))
+            .unwrap_or_else(|| Vec::new(&env))
+    }
+
+    fn assert_asset_not_locked(env: &Env, asset_code: &String) {
+        let lock_state: Option<AssetLockState> = env
+            .storage()
+            .persistent()
+            .get(&AssetDataKey::Lock(asset_code.clone()));
+        
+        if let Some(state) = lock_state {
+            if state.is_locked {
+                panic!("asset is locked for maintenance");
+            }
+        }
     }
 
     /// Get all monitored assets
@@ -5780,7 +5950,6 @@ impl BridgeWatchContract {
     pub fn get_risk_score_config(env: Env) -> RiskScoreConfig {
         Self::load_risk_score_config(&env)
     }
-}
 
     /// Pure deterministic calculation for the composite risk score.
     ///
