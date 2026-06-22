@@ -96,6 +96,9 @@ impl StateExportHelper {
     }
 
     /// Generate deterministic state hash for audit trail.
+    ///
+    /// Uses SHA-256 over the same byte encoding as the other hash functions in
+    /// this file — `no_std` compatible, no `format!` macro required.
     pub fn compute_state_hash(
         env: Env,
         asset_code: &String,
@@ -103,12 +106,13 @@ impl StateExportHelper {
         risk_score: u32,
         timestamp: u64,
     ) -> String {
-        let mut hash_input = String::from_str(&env, "");
-        hash_input = String::from_str(
-            &env,
-            &format!("{}{}{}{}", asset_code, status, risk_score, timestamp),
-        );
-        hash_input
+        let mut bytes = Bytes::new(&env);
+        Self::append_string(&mut bytes, asset_code);
+        Self::append_string(&mut bytes, status);
+        Self::append_u32(&mut bytes, risk_score);
+        Self::append_u64(&mut bytes, timestamp);
+        let digest: BytesN<32> = env.crypto().sha256(&bytes).into();
+        Self::hash_to_hex(&env, &digest)
     }
 
     /// Build a placeholder snapshot when no health record exists yet.
