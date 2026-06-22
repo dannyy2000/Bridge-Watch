@@ -96,6 +96,9 @@ impl StateExportHelper {
     }
 
     /// Generate deterministic state hash for audit trail.
+    ///
+    /// Uses SHA-256 over concatenated XDR bytes and big-endian numeric bytes —
+    /// `no_std` compatible, no `format!` macro required.
     pub fn compute_state_hash(
         env: Env,
         asset_code: &String,
@@ -103,12 +106,27 @@ impl StateExportHelper {
         risk_score: u32,
         timestamp: u64,
     ) -> String {
-        let mut hash_input = String::from_str(&env, "");
-        hash_input = String::from_str(
-            &env,
-            &format!("{}{}{}{}", asset_code, status, risk_score, timestamp),
-        );
-        hash_input
+        use soroban_sdk::Bytes;
+
+        let mut bytes = Bytes::new(&env);
+        bytes.append(&asset_code.to_xdr(&env));
+        bytes.append(&status.to_xdr(&env));
+        for b in risk_score.to_be_bytes() {
+            bytes.push_back(b);
+        }
+        for b in timestamp.to_be_bytes() {
+            bytes.push_back(b);
+        }
+        let digest = env.crypto().sha256(&bytes);
+        let d = digest.to_array();
+        let hex_chars = b"0123456789abcdef";
+        let mut out = [0u8; 16];
+        for i in 0..8 {
+            out[i * 2]     = hex_chars[(d[i] >> 4) as usize];
+            out[i * 2 + 1] = hex_chars[(d[i] & 0xf) as usize];
+        }
+        let s = core::str::from_utf8(&out).unwrap_or("0000000000000000");
+        String::from_str(&env, s)
     }
 
     /// Build a placeholder snapshot when no health record exists yet.
