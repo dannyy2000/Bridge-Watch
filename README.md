@@ -190,6 +190,7 @@ WS   /api/v1/ws                        # WebSocket for real-time updates
 
 ## Feature Documentation
 
+- Build cache matrix: [docs/build-cache-matrix.md](docs/build-cache-matrix.md)
 - Support handbook: [docs/support-handbook.md](docs/support-handbook.md)
 - Migration notes template: [docs/migration-notes-template.md](docs/migration-notes-template.md)
 - API authentication guide: [docs/api-authentication-guide.md](docs/api-authentication-guide.md)
