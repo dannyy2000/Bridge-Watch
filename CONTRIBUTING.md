@@ -431,6 +431,8 @@ cd contracts && cargo test
   Use the test factories in `backend/tests/factories/` to build realistic fixtures.
 - **Integration tests** — use the helpers in `backend/tests/helpers/` to run
   migrations, truncate tables, and clean up after each test.
+- **Fixture reference** — see [`docs/FIXTURE_AUDIT_REPORT.md`](docs/FIXTURE_AUDIT_REPORT.md)
+  for the full inventory of shared fixtures, update process, and CI alignment.
 - **Test names** should read as sentences: `it("returns 404 when asset is not found")`.
 - Avoid testing implementation details — test observable behaviour.
 

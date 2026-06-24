@@ -24,7 +24,9 @@
     "test:e2e:report": "playwright show-report",
     "lint": "npm run lint --workspaces --if-present",
     "setup": "bash scripts/setup.sh",
-    "setup:quick": "bash scripts/setup.sh --skip-contracts --skip-ide -y"
+    "setup:quick": "bash scripts/setup.sh --skip-contracts --skip-ide -y",
+    "sandbox": "NODE_ENV=sandbox tsx sandbox/seed.ts && npm run dev",
+    "sandbox:reset": "NODE_ENV=sandbox tsx sandbox/seed.ts"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -45,7 +47,8 @@
     "analytics"
   ],
   "devDependencies": {
-    "@playwright/test": "^1.54.2"
+    "@playwright/test": "^1.54.2",
+    "@types/use-sync-external-store": "^1.5.0"
   },
   "overrides": {
     "@asamuzakjp/css-color": "4.1.2"

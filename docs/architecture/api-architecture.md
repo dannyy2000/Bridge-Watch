@@ -161,3 +161,4 @@ OpenAPI/Swagger documentation is auto-generated:
 - **Spec file:** `backend/docs/openapi.json`
 - **Generation:** `npm run docs:generate` in the backend directory
 - **Swagger UI:** Available at `/docs` when enabled
+- **Authentication guide:** [../api-authentication-guide.md](../api-authentication-guide.md)
