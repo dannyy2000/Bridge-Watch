@@ -21,6 +21,7 @@ const Transactions = lazy(() => import("./pages/Transactions"));
 const ApiKeys = lazy(() => import("./pages/ApiKeys"));
 const AlertRoutingAdmin = lazy(() => import("./pages/AlertRoutingAdmin"));
 const SupplyChain = lazy(() => import("./pages/SupplyChain"));
+const BridgeTopologyExplorer = lazy(() => import("./pages/BridgeTopologyExplorer"));
 const Reconciliation = lazy(() => import("./pages/Reconciliation"));
 const ApiDocs = lazy(() => import("./pages/ApiDocs"));
 const Help = lazy(() => import("./pages/Help"));
@@ -29,6 +30,7 @@ const NotificationPreferencesPage = lazy(() => import("./pages/NotificationPrefe
 const RelationshipExplorer = lazy(() => import("./pages/RelationshipExplorer"));
 const SearchResultsPage = lazy(() => import("./pages/SearchResultsPage"));
 const Alerts = lazy(() => import("./pages/Alerts"));
+const AlertPlaybookViewer = lazy(() => import("./pages/AlertPlaybookViewer"));
 const DataProvenanceGraph = lazy(() => import("./pages/DataProvenanceGraph"));
 const AlertSimulationSandbox = lazy(() => import("./pages/AlertSimulationSandbox"));
 const LiquidityFragmentation = lazy(() => import("./pages/LiquidityFragmentation"));
@@ -65,6 +67,7 @@ function App() {
               <Route path="/incidents" element={<Incidents />} />
               <Route path="/incidents/replay/:id" element={<IncidentReplay />} />
               <Route path="/alerts" element={<Alerts />} />
+              <Route path="/alert-playbooks" element={<AlertPlaybookViewer />} />
               <Route path="/transactions" element={<Transactions />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/analytics/metric-builder" element={<CustomMetricBuilder />} />
@@ -76,6 +79,7 @@ function App() {
               <Route path="/admin/alert-routing" element={<AlertRoutingAdmin />} />
               <Route path="/admin/access-audit" element={<OperationalAccessAudit />} />
               <Route path="/supply-chain" element={<SupplyChain />} />
+              <Route path="/bridge-topology" element={<BridgeTopologyExplorer />} />
               <Route path="/reconciliation" element={<Reconciliation />} />
               <Route path="/api-docs" element={<ApiDocs />} />
               <Route path="/help" element={<Help />} />
